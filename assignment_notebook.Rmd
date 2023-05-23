@@ -1,0 +1,80 @@
+---
+title: "Group_assignment"
+author: "Nikhil Banerjee"
+date: "23/05/2023"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(tsibble)
+library(ggplot2)
+library(fpp3)
+```
+
+
+```{r}
+data <- read_csv('employed.csv') %>% 
+    mutate(Quarter = yearquarter(Quarter)) %>% 
+    mutate(`Total Employed` = rowSums(across(!Quarter))) %>% 
+    select('Quarter', 'Retail Trade and Accommodation','Total Employed') %>% 
+    mutate(RTA_per_total = `Retail Trade and Accommodation`/`Total Employed`) %>% 
+    as_tsibble(index=Quarter)
+
+data
+```
+
+
+```{r}
+data %>% 
+    autoplot(`Retail Trade and Accommodation`)
+```
+
+```{r}
+data %>% 
+    model(STL(`Retail Trade and Accommodation` ~ trend() + season(window='periodic'), robust = TRUE)) %>% 
+    components %>% 
+    autoplot()
+```
+
+
+
+```{r}
+data %>% 
+    autoplot(RTA_per_total)
+```
+
+
+
+```{r}
+data %>% 
+    model(STL(RTA_per_total ~ trend(window=31) + season(window='periodic'), robust = TRUE)) %>% 
+    components %>% 
+    autoplot()
+
+```
+
+
+```{r}
+lambda <- data %>% 
+    features(RTA_per_total, features = guerrero) %>% 
+    pull(lambda_guerrero)
+
+dcmp2 <- data %>% 
+    model(STL(box_cox(RTA_per_total, lambda) ~ trend() + season(window='periodic'), robust = TRUE))
+
+dcmp2 %>% 
+    components() %>% 
+    autoplot()
+
+```
+
+
+
+```{r}
+lambda
+```
+
+
+
+
