@@ -1,0 +1,135 @@
+---
+title: "Untitled"
+author: "Nikhil Banerjee"
+date: "31/05/2023"
+output: html_document
+---
+
+```{r}
+data %>% 
+    autoplot(`Retail Trade and Accommodation`)
+```
+
+
+```{r}
+data %>% 
+    gg_tsdisplay(`Retail Trade and Accommodation`, plot_type = 'partial')
+```
+
+
+```{r}
+data %>% 
+    gg_tsdisplay(difference(`Retail Trade and Accommodation`,4), plot_type = 'partial')
+```
+
+```{r}
+data %>% 
+    gg_tsdisplay(difference(`Retail Trade and Accommodation`,4) %>% difference(), plot_type = 'partial')
+```
+
+```{r}
+data %>% 
+    gg_tsdisplay(difference(`Retail Trade and Accommodation`), plot_type = 'partial')
+```
+
+
+```{r}
+data %>% 
+    autoplot(difference(`Retail Trade and Accommodation`, 4))
+```
+
+
+
+```{r}
+fit <- data %>% 
+    model(
+        m1 = ARIMA(`Retail Trade and Accommodation` ~ pdq(1,1,0))
+        , stepwise = ARIMA(`Retail Trade and Accommodation`)
+        , log_stepwise = ARIMA(log(`Retail Trade and Accommodation`))
+    )
+
+glance(fit)
+```
+
+```{r}
+fit %>% 
+    select(stepwise) %>% 
+    report()
+```
+
+```{r}
+fit %>% 
+    select(stepwise) %>% 
+    gg_tsresiduals()
+```
+
+```{r}
+fc <- fit %>%
+    select(stepwise) %>% 
+  forecast(h = '3 years')
+
+# Plot forecast
+fc %>%
+  autoplot(data) + 
+  geom_line(data = fitted(fit) %>% 
+              filter(.model == "stepwise"),
+            mapping = aes(y = .fitted),
+            colour = "red") +
+  theme_minimal()
+```
+
+```{r}
+fc
+```
+
+
+```{r}
+data %>% 
+    autoplot(RTA_per_total)
+```
+
+
+```{r}
+fit2 <- data %>% 
+    model(
+        m1 = ARIMA(RTA_per_total ~ pdq(1,1,0))
+        , stepwise = ARIMA(RTA_per_total)
+        , search = ARIMA(RTA_per_total, stepwise = FALSE, approx = FALSE)
+    )
+
+glance(fit2)
+```
+
+
+```{r}
+fit2 %>% 
+    select(search) %>% 
+    report()
+```
+
+```{r}
+fit2 %>% 
+    select(search) %>% 
+    gg_tsresiduals()
+```
+
+```{r}
+fc <- fit2 %>%
+    select(search) %>% 
+  forecast(h = '3 years')
+
+# Plot forecast
+fc %>%
+  autoplot(data) + 
+  geom_line(data = fitted(fit2) %>% 
+              filter(.model == "search"),
+            mapping = aes(y = .fitted),
+            colour = "red") +
+  theme_minimal()
+```
+
+
+# Actual
+
+
+

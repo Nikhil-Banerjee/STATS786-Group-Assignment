@@ -1,0 +1,118 @@
+---
+title: "Untitled"
+author: "Nikhil Banerjee"
+date: "30/05/2023"
+output: html_document
+---
+
+```{r}
+data %>% 
+    autoplot(`Retail Trade and Accommodation`)
+```
+
+
+
+```{r}
+data %>% 
+    PACF(`Retail Trade and Accommodation`) %>% 
+    autoplot()
+```
+
+
+```{r}
+fit_ets_model <- function(data, var, h){
+    fit <- data %>% 
+        model(ETS(`Retail Trade and Accommodation` ~ error('M') + trend('A') + season('M')))
+    
+    report(fit)
+    
+    
+    g1 <- fit %>%
+        components %>%
+        autoplot()
+
+    fc <- fit %>%
+        forecast(h = h)
+
+    g2 <- fc %>%
+      autoplot(data, alpha = 0.5) +
+      geom_line(data = augment(fit),
+                 mapping = aes(y = .fitted,
+                               colour = .model)) +
+      theme_minimal()
+    
+    return(list(g1=g1, g2=g2))
+
+}
+```
+
+```{r}
+fit_ets_model(data, `Retail Trade and Accommodation`, '3 years')
+```
+
+
+```{r}
+fit <- data %>% 
+    model(
+        m1 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('A') + season('M'))
+        , m2 = ETS(`Retail Trade and Accommodation` ~ error('A') + trend('Ad') + season('A'))
+        , m3 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('Ad') + season('A'))
+        , m4 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('Ad') + season('M'))
+        , m5 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('N') + season('A'))
+        , m6 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('N') + season('N'))
+        , m7 = ETS(`Retail Trade and Accommodation` ~ error('M') + trend('A') + season('N'))
+        , m.auto = ETS(`Retail Trade and Accommodation`)
+    )
+
+glance(fit)
+```
+
+```{r}
+fit %>% 
+    select(m.auto) %>% 
+    report()
+```
+
+
+```{r}
+fc <- fit %>% 
+  forecast(h = "4 years")
+fc %>% 
+  autoplot(data)
+```
+
+
+```{r}
+data %>% 
+    autoplot(RTA_per_total)
+```
+
+
+
+```{r}
+fit2 <- data %>% 
+    model(
+        m1 = ETS(RTA_per_total ~ error('M') + trend('A') + season('N'))
+        , m.auto = ETS(RTA_per_total)
+    )
+
+glance(fit2)
+```
+
+```{r}
+fit2 %>% 
+    select(m.auto) %>% 
+    report()
+```
+
+```{r}
+fc <- fit2 %>% 
+  forecast(h = "4 years")
+fc %>% 
+  autoplot(data)
+```
+
+
+
+
+

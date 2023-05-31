@@ -30,6 +30,20 @@ data %>%
     autoplot(`Retail Trade and Accommodation`)
 ```
 
+
+
+
+```{r}
+lambda <- data %>% 
+    features(`Retail Trade and Accommodation`, features = guerrero) %>% 
+    pull(lambda_guerrero)
+
+data %>% 
+    model(STL(box_cox(`Retail Trade and Accommodation`, lambda) ~ trend() + season(window='periodic'), robust = TRUE)) %>% 
+    components %>% 
+    autoplot()
+```
+
 ```{r}
 data %>% 
     model(STL(`Retail Trade and Accommodation` ~ trend() + season(window='periodic'), robust = TRUE)) %>% 
@@ -37,6 +51,43 @@ data %>%
     autoplot()
 ```
 
+
+
+
+```{r}
+fit.ets <- data %>% 
+    model(ETS(`Retail Trade and Accommodation`))
+
+report(fit.ets)
+```
+
+
+```{r}
+fit.ets %>% 
+    components() %>% 
+    autoplot()
+```
+
+```{r}
+fit.ets <- data %>% 
+    model(ETS(RTA_per_total))
+
+report(fit.ets)
+```
+
+
+```{r}
+fit.ets %>% 
+    components() %>% 
+    autoplot()
+```
+
+
+
+```{r}
+data %>% 
+    autoplot(`Total Employed`)
+```
 
 
 ```{r}
@@ -72,8 +123,96 @@ dcmp2 %>%
 
 
 ```{r}
-lambda
+fit.ets2 <- data %>% 
+    model(ETS(`RTA_per_total`))
+
+report(fit.ets2)
 ```
+
+```{r}
+fit.ets2 %>% 
+    forecast() %>% 
+    autoplot(data)
+```
+
+
+
+
+
+
+
+```{r}
+data %>% 
+    features(`RTA_per_total`, unitroot_ndiffs)
+```
+
+
+
+```{r}
+data <- data %>% 
+    mutate(diff_RTA_per_total = difference(RTA_per_total))
+
+
+```
+
+
+```{r}
+ggplot(data=data[-1,]) + geom_line(aes(x=Quarter, y=diff_RTA_per_total))
+```
+
+```{r}
+fit.arima <- data %>% 
+    model(ARIMA(`Retail Trade and Accommodation`))
+
+report(fit.arima)
+```
+
+```{r}
+fit.arima %>% 
+    forecast(h=10) %>% 
+    autoplot(data)
+```
+
+```{r}
+fit.arima <- data %>% 
+    model(ARIMA(RTA_per_total))
+
+report(fit.arima)
+```
+
+```{r}
+fit.arima %>% 
+    forecast(h=100) %>% 
+    autoplot(data)
+```
+
+
+```{r}
+fit.arima2 <- data %>% 
+    model(ARIMA(RTA_per_tot)
+
+report(fit.arima2)
+```
+
+
+```{r}
+fit.arima2 %>% 
+    forecast(h=10) %>% 
+    autoplot(data[-1,])
+```
+
+```{r}
+data %>% 
+    gg_tsdisplay(difference(RTA_per_total), plot_type = "partial")
+```
+
+
+
+
+
+
+
+
 
 
 
